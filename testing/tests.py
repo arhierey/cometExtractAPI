@@ -1,15 +1,27 @@
+import unittest
 import requests
 
 
-with open('test_cases.txt', 'r') as f:
-    data = f.read()
-test_cases = data.split('\n')
-test_cases = [each.split(',') for each in test_cases]
+class UnitTesting(unittest.TestCase):
+    def test_invalid_credentials(self):
+        response = requests.post('http://localhost:8000/fetch',
+                                 json={'email': 'user1@examplecom', 'password': 'pass123'})
+        self.assertEqual(response.status_code, 400)
 
-path = 'http://localhost:8000/fetch'
-res = []
-for case in test_cases:
-    response = requests.post(path, json={'email': case[0], 'password': case[1]})
-    res.append(response.text == case[2])
-if all(res):
-    print('All tests passed!')
+    def test_no_email(self):
+        response = requests.post('http://localhost:8000/fetch',
+                                 json={'email': '', 'password': 'pass123'})
+        self.assertEqual(response.status_code, 400)
+
+    def test_no_password(self):
+        response = requests.post('http://localhost:8000/fetch',
+                                 json={'email': 'user1@example.com', 'password': ''})
+        self.assertEqual(response.status_code, 400)
+
+    def test_no_credentials(self):
+        response = requests.post('http://localhost:8000/fetch')
+        self.assertEqual(response.status_code, 415)
+
+
+if __name__ == '__main__':
+    unittest.main()
